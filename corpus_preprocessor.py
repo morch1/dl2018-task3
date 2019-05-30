@@ -1,3 +1,4 @@
+import argparse
 import re
 import random
 import json
@@ -55,8 +56,14 @@ class CorpusPreprocessor:
 
 
 def main():
-    c = CorpusPreprocessor("D:\\data\\train_shuf.txt", 50000)
-    c.save('corpus.json')
+    parser = argparse.ArgumentParser(description='Preprocess data',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--source', default='train_shuf.txt', help='file containing original dataset')
+    parser.add_argument('--destination', default='corpus.json', help='file to store preprocessed data')
+    parser.add_argument('--nsentences', default=50000, help='how many sentences to store')
+    args = parser.parse_args()
+    c = CorpusPreprocessor(args.source, args.nsentences)
+    c.save(args.destination)
 
 
 if __name__ == '__main__':
