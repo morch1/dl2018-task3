@@ -27,7 +27,7 @@ class CorpusPreprocessor:
                 words.update(ts)
             if len(self.sentences) == n_sentences:
                 break
-        self.words = list(words)
+        self.words = sorted(list(words))
 
     def transform_text(self, text):
         return self.multi_spaces_regex.sub(' ', self.non_letters_regex.sub('', text.lower())).strip().split()
