@@ -3,8 +3,6 @@ import re
 import random
 import json
 
-random.seed(420)
-
 
 class CorpusPreprocessor:
     MASK = '?'
@@ -17,7 +15,7 @@ class CorpusPreprocessor:
         self.sentences = []
         with open(path, encoding='utf-8') as f:
             sentences = f.readlines()
-        if n_sentences is None:
+        if n_sentences is None or n_sentences > len(sentences) / 2:
             random.shuffle(sentences)
         else:
             sentences = random.sample(sentences, 2 * n_sentences)
@@ -35,13 +33,14 @@ class CorpusPreprocessor:
         return self.multi_spaces_regex.sub(' ', self.non_letters_regex.sub('', text.lower())).strip().split()
 
     def mask_text(self, text):
-        i = random.randint(0, len(text))
+        i = random.randint(0, len(text) - 1)
         original_word = text[i]
-        text[i] = self.MASK
+        masked_sent = text.copy()
+        masked_sent[i] = self.MASK
         if bool(random.randint(0, 1)):
-            return text, original_word, 1
+            return masked_sent, original_word, 1
         else:
-            return text, random.choice(self.words), 0
+            return masked_sent, random.choice(self.words), 0
 
     def save(self, path):
         data = {'words': self.words, 'sentences': self.sentences}
@@ -56,14 +55,15 @@ class CorpusPreprocessor:
 
 
 def main():
+    random.seed(420)
     parser = argparse.ArgumentParser(description='Preprocess data',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--source', default='train_shuf.txt', help='file containing original dataset')
     parser.add_argument('--destination', default='corpus.json', help='file to store preprocessed data')
     parser.add_argument('--nsentences', default=50000, help='how many sentences to store')
     args = parser.parse_args()
-    c = CorpusPreprocessor(args.source, args.nsentences)
-    c.save(args.destination)
+    cp = CorpusPreprocessor(args.source, args.nsentences)
+    cp.save(args.destination)
 
 
 if __name__ == '__main__':
