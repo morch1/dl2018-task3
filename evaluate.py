@@ -44,7 +44,7 @@ def main():
     parser.add_argument('--model', default='checkpoint.pt', help='model to use')
     parser.add_argument('--data', default='corpus.pt', help='preprocessed data file')
     parser.add_argument('--device', default='cuda:0' if torch.cuda.is_available() else 'cpu', help='device to use')
-    parser.add_argument('--batch', default=64, help='batch size')
+    parser.add_argument('--batch', default=64, type=int, help='batch size')
     args = parser.parse_args()
 
     cp = CorpusPreprocessor()
