@@ -1,9 +1,5 @@
-import random
 import torch
 from torch import nn
-from torch.utils.data import DataLoader
-from dataset import CorpusDataset
-from preprocessor import CorpusPreprocessor
 
 
 class Flatten(nn.Module):
@@ -45,8 +41,8 @@ class SentenceEmbedder(nn.Module):
     def forward(self, x):
         batch_size = x.shape[0]
         state = (
-            torch.zeros(2, batch_size, self.embedding_size),
-            torch.zeros(2, batch_size, self.embedding_size)
+            torch.zeros(2, batch_size, self.embedding_size).to(x.device),
+            torch.zeros(2, batch_size, self.embedding_size).to(x.device),
         )
         words = x.view(batch_size * self.max_sentence_length, self.max_word_length, self.alphabet_size)
         words_emb = self.we(words).view(batch_size, self.max_sentence_length, self.embedding_size).transpose(0, 1)
@@ -69,6 +65,7 @@ class Net(nn.Module):
             nn.Linear((2 * max_sentence_length + 1) * embedding_size, embedding_size),
             nn.ReLU(),
             nn.Linear(embedding_size, 1),
+            nn.Sigmoid(),
         )
 
     def forward(self, masked_sents, words, masked_idxs):
@@ -77,21 +74,3 @@ class Net(nn.Module):
         x = torch.cat((masked_sents_emb[0], masked_sents_emb[1], words_emb.unsqueeze(1)), dim=1)
         x = self.lin(x)
         return x
-
-
-def main():
-    random.seed(420)
-    cp = CorpusPreprocessor()
-    cp.load('corpus.pt')
-    train_set, test_set = CorpusDataset.split(cp, 0.8)
-    train_loader = DataLoader(train_set, batch_size=10, num_workers=4)
-    test_loader = DataLoader(test_set, batch_size=10, num_workers=4)
-
-    n = Net(len(cp.alphabet), cp.max_sentence_length, cp.max_word_length, 100)
-
-    ms, w, mi, lbl = next(iter(train_loader))
-    print(n(ms, w, mi))
-
-
-if __name__ == '__main__':
-    main()
