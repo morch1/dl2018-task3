@@ -1,17 +1,20 @@
 import argparse
 import re
 import random
-import json
+import torch
 
 
 class CorpusPreprocessor:
     MASK = '?'
-    non_letters_regex = re.compile('[^a-ząćęłńóśźż ]')
+    alphabet = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż'
+    non_letters_regex = re.compile(f'[^{alphabet} ]')
     multi_spaces_regex = re.compile(' +')
 
     def __init__(self, path=None, n_sentences=None, max_word_length=25, max_sentence_length=25):
         if path is None:
             return
+        self.max_word_length = max_word_length
+        self.max_sentence_length = max_sentence_length
         self.sentences = []
         with open(path, encoding='utf-8') as f:
             sentences = f.readlines()
@@ -43,13 +46,17 @@ class CorpusPreprocessor:
             return masked_sent, random.choice(self.words), 0
 
     def save(self, path):
-        data = {'words': self.words, 'sentences': self.sentences}
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(data, f)
+        torch.save({
+            'max_word_length': self.max_word_length,
+            'max_sentence_length': self.max_sentence_length,
+            'words': self.words,
+            'sentences': self.sentences
+        }, path)
 
     def load(self, path):
-        with open(path, encoding='utf-8') as f:
-            data = json.load(f)
+        data = torch.load(path)
+        self.max_word_length = data['max_word_length']
+        self.max_sentence_length = data['max_sentence_length']
         self.words = data['words']
         self.sentences = data['sentences']
 
@@ -59,7 +66,7 @@ def main():
     parser = argparse.ArgumentParser(description='Preprocess data',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--source', default='train_shuf.txt', help='file containing original dataset')
-    parser.add_argument('--destination', default='corpus.json', help='file to store preprocessed data')
+    parser.add_argument('--destination', default='corpus.pt', help='file to store preprocessed data')
     parser.add_argument('--nsentences', default=50000, help='how many sentences to store')
     args = parser.parse_args()
     cp = CorpusPreprocessor(args.source, args.nsentences)
