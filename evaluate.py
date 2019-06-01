@@ -17,13 +17,12 @@ def evaluate(net, device, testloader, criterion=None):
     correct = 0
     total = 0
 
-    for (masked_sents, words, mask_idxs, labels) in testloader:
+    for (masked_sents, words, labels) in testloader:
         masked_sents = masked_sents.to(device)
         words = words.to(device)
-        mask_idxs = mask_idxs.to(device)
         labels = labels.to(device)
         with torch.no_grad():
-            outputs = net(masked_sents, words, mask_idxs)
+            outputs = net(masked_sents, words)
             if criterion is not None:
                 test_loss += criterion(outputs, labels).item()
             predicted = outputs.round()

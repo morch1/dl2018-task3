@@ -45,13 +45,12 @@ def train(net, device, trainset, testset, batch_size, lr, max_epochs, early_stop
     for epoch in range(max_epochs):
         net.train()
         train_loss = 0.0
-        for (masked_sents, words, mask_idxs, labels) in trainloader:
+        for (masked_sents, words, labels) in trainloader:
             masked_sents = masked_sents.to(device)
             words = words.to(device)
-            mask_idxs = mask_idxs.to(device)
             labels = labels.to(device)
             optimizer.zero_grad()
-            outputs = net(masked_sents, words, mask_idxs)
+            outputs = net(masked_sents, words)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -90,6 +89,7 @@ def main():
     parser.add_argument('--lr', default=0.001, help='learning rate')
     parser.add_argument('--epochs', default=100, help='max number of epochs')
     parser.add_argument('--earlystop', default=5, help='early stop after this many epochs without improvement')
+    parser.add_argument('--embedding_size', default=100, help='size of word embedding vector')
     args = parser.parse_args()
 
     cp = CorpusPreprocessor()
@@ -97,7 +97,7 @@ def main():
 
     trainset, testset = CorpusDataset.split(cp, 0.8)
 
-    net = Net(len(cp.alphabet), cp.max_sentence_length, cp.max_word_length, 100)
+    net = Net(len(cp.alphabet), cp.max_sentence_length, cp.max_word_length, args.embedding_size)
     train(net, args.device, trainset, testset, args.batch, args.lr, args.epochs, args.earlystop, args.checkpoint)
 
 

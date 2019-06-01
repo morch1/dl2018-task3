@@ -6,13 +6,13 @@ import torch
 
 class CorpusPreprocessor:
     MASK = '?'
-    alphabet = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż'
-    non_letters_regex = re.compile(f'[^{alphabet} ]')
     multi_spaces_regex = re.compile(' +')
 
-    def __init__(self, path=None, n_sentences=None, max_word_length=25, max_sentence_length=25):
+    def __init__(self, path=None, n_sentences=None, alphabet=None, max_word_length=None, max_sentence_length=None):
         if path is None:
             return
+        self.alphabet = alphabet
+        self.non_letters_regex = re.compile(f'[^{alphabet} ]')
         self.max_word_length = max_word_length
         self.max_sentence_length = max_sentence_length
         self.sentences = []
@@ -47,6 +47,7 @@ class CorpusPreprocessor:
 
     def save(self, path):
         torch.save({
+            'alphabet': self.alphabet,
             'max_word_length': self.max_word_length,
             'max_sentence_length': self.max_sentence_length,
             'words': self.words,
@@ -55,6 +56,7 @@ class CorpusPreprocessor:
 
     def load(self, path):
         data = torch.load(path)
+        self.alphabet = data['alphabet']
         self.max_word_length = data['max_word_length']
         self.max_sentence_length = data['max_sentence_length']
         self.words = data['words']
@@ -68,8 +70,11 @@ def main():
     parser.add_argument('--source', default='train_shuf.txt', help='file containing original dataset')
     parser.add_argument('--destination', default='corpus.pt', help='file to store preprocessed data')
     parser.add_argument('--nsentences', default=50000, help='how many sentences to store')
+    parser.add_argument('--alphabet', default='aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż', help='allowed characters')
+    parser.add_argument('--max_word_length', default=25, help='max word length')
+    parser.add_argument('--max_sent_length', default=35, help='max sentence length')
     args = parser.parse_args()
-    cp = CorpusPreprocessor(args.source, args.nsentences)
+    cp = CorpusPreprocessor(args.source, args.nsentences, args.alphabet, args.max_word_length, args.max_sent_length)
     cp.save(args.destination)
 
 
