@@ -8,8 +8,6 @@ from preprocessor import CorpusPreprocessor
 
 
 def evaluate(net, device, testloader, criterion=None):
-    if criterion is None:
-        net.to(device)
     n_test_batches = len(testloader)
 
     net.eval()
@@ -50,8 +48,9 @@ def main():
     cp = CorpusPreprocessor()
     cp.load(args.data)
 
-    net = Net(len(cp.alphabet), cp.max_sentence_length, cp.max_word_length, 100)
+    net = Net(len(cp.alphabet), cp.max_sentence_length, cp.max_word_length)
     net.load_state_dict(torch.load(args.model, map_location=args.device))
+    net.to(args.device)
 
     _, testset = CorpusDataset.split(cp, 0.8)
     testloader = DataLoader(testset, batch_size=args.batch, num_workers=4)

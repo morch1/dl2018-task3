@@ -39,7 +39,9 @@ def train(net, device, trainset, testset, batch_size, lr, max_epochs, early_stop
 
     patience = early_stop
 
-    logger.info('device {}, batch size {}, lr {}, max epochs {}, early stop {}'.format(device, batch_size, lr, max_epochs, early_stop))
+    logger.info(f'device {device}, batch size {batch_size}, lr {lr}, max epochs {max_epochs}, early stop {early_stop}')
+    logger.info(f'alphabet size {net.se.alphabet_size}, max word length {net.se.max_word_length}, '
+                f'max sentence length {net.se.max_sentence_length}, embedding size {net.se.embedding_size}')
     logger.info('started training')
 
     for epoch in range(max_epochs):
@@ -86,10 +88,9 @@ def main():
     parser.add_argument('--checkpoint', default='checkpoint.pt', help='checkpoint filename')
     parser.add_argument('--device', default='cuda:0' if torch.cuda.is_available() else 'cpu', help='device to use')
     parser.add_argument('--batch', default=64, type=int, help='batch size')
-    parser.add_argument('--lr', default=0.003, type=float, help='learning rate')
+    parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=100, type=int, help='max number of epochs')
     parser.add_argument('--earlystop', default=5, type=int, help='early stop after this many epochs without improvement')
-    parser.add_argument('--embedding_size', default=100, type=int, help='size of word embedding vector')
     args = parser.parse_args()
 
     cp = CorpusPreprocessor()
@@ -97,7 +98,7 @@ def main():
 
     trainset, testset = CorpusDataset.split(cp, 0.8)
 
-    net = Net(len(cp.alphabet), cp.max_sentence_length, cp.max_word_length, args.embedding_size)
+    net = Net(len(cp.alphabet), cp.max_sentence_length, cp.max_word_length)
     train(net, args.device, trainset, testset, args.batch, args.lr, args.epochs, args.earlystop, args.checkpoint)
 
 
