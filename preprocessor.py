@@ -7,12 +7,12 @@ import torch
 class CorpusPreprocessor:
     MASK = '?'
     multi_spaces_regex = re.compile(' +')
+    alphabet = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż'
+    non_letters_regex = re.compile(f'[^{alphabet} ]')
 
-    def __init__(self, path=None, n_sentences=None, alphabet=None, max_word_length=None, max_sentence_length=None):
+    def __init__(self, path=None, n_sentences=None, max_word_length=None, max_sentence_length=None):
         if path is None:
             return
-        self.alphabet = alphabet
-        self.non_letters_regex = re.compile(f'[^{alphabet} ]')
         self.max_word_length = max_word_length
         self.max_sentence_length = max_sentence_length
         self.sentences = []
@@ -70,11 +70,10 @@ def main():
     parser.add_argument('--source', default='train_shuf.txt', help='file containing original dataset')
     parser.add_argument('--destination', default='corpus.pt', help='file to store preprocessed data')
     parser.add_argument('--nsentences', default=50000, type=int, help='how many sentences to store')
-    parser.add_argument('--alphabet', default='aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż', help='allowed characters')
     parser.add_argument('--max_word_length', default=25, type=int, help='max word length')
     parser.add_argument('--max_sent_length', default=35, type=int, help='max sentence length')
     args = parser.parse_args()
-    cp = CorpusPreprocessor(args.source, args.nsentences, args.alphabet, args.max_word_length, args.max_sent_length)
+    cp = CorpusPreprocessor(args.source, args.nsentences, args.max_word_length, args.max_sent_length)
     cp.save(args.destination)
 
 
