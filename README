@@ -1,0 +1,7 @@
+3rd assignment for deep learning class (see task3.pdf for more info)
+
+Executables (run with -h parameter for more info):
+    preprocessor.py     - prepares the dataset
+    train.py            - trains a model
+    evaluate.py         - evaluates model accuracy
+    visualization.ipynb - embedding visualization
